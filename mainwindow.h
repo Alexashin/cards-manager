@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QCloseEvent>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -16,22 +17,26 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void on_addPatientButton_clicked();
-    void on_editPatientButton_clicked();
-    void on_deletePatientButton_clicked();
+
+protected:
+    void closeEvent(QCloseEvent *event) override;
 
 private slots:
+    void handleAddPatient();
+    void handleEditPatient();
+    void handleDeletePatient();
     void openFile();
     void openLastFile();
     void saveFile();
     void saveFileAs();
-    void exitApplication();
+    void handleSearch(const QString &query);
 
 private:
     Ui::MainWindow *ui;
-    QString currentFile; // Для хранения пути к последнему открытому/сохранённому файлу
-
+    QString currentFile;
+    bool isDataModified;
     void loadFile(const QString &fileName);
     void writeToFile(const QString &fileName);
 };
+
 #endif // MAINWINDOW_H

@@ -10,34 +10,47 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , isDataModified(false)
 {
     ui->setupUi(this);
 
-    ui->generalTable->setColumnCount(7); // Устанавливаем количество колонок
+    ui->generalTable->setColumnCount(7);
     ui->generalTable->setHorizontalHeaderLabels({
         "Фамилия", "Имя", "Отчество", "Год рождения", "Рост", "Вес", "Заметки"
     });
-
-    // Дополнительно можно задать растяжение колонок
     ui->generalTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
-    connect(ui->addPatientButton, &QPushButton::clicked, this, &MainWindow::on_addPatientButton_clicked);
-    connect(ui->editPatientButton, &QPushButton::clicked, this, &MainWindow::on_editPatientButton_clicked);
-    connect(ui->deletePatientButton, &QPushButton::clicked, this, &MainWindow::on_deletePatientButton_clicked);
-
+    connect(ui->addPatientButton, &QPushButton::clicked, this, &MainWindow::handleAddPatient);
+    connect(ui->editPatientButton, &QPushButton::clicked, this, &MainWindow::handleEditPatient);
+    connect(ui->deletePatientButton, &QPushButton::clicked, this, &MainWindow::handleDeletePatient);
     connect(ui->openFileActionButton, &QAction::triggered, this, &MainWindow::openFile);
     connect(ui->openLastActionButton, &QAction::triggered, this, &MainWindow::openLastFile);
     connect(ui->saveActionButton, &QAction::triggered, this, &MainWindow::saveFile);
     connect(ui->saveAsActionButton, &QAction::triggered, this, &MainWindow::saveFileAs);
     connect(ui->exitActionButton, &QAction::triggered, this, &QApplication::quit);
+    connect(ui->searchLineEdit, &QLineEdit::textChanged, this, &MainWindow::handleSearch);
 }
 
-MainWindow::~MainWindow()
-{
+MainWindow::~MainWindow() {
     delete ui;
 }
 
-void MainWindow::on_addPatientButton_clicked() {
+void MainWindow::closeEvent(QCloseEvent *event) {
+    if (isDataModified) {
+        QMessageBox::StandardButton confirm = QMessageBox::question(
+            this, "Выход из программы",
+            "Есть несохранённые изменения. Вы уверены, что хотите выйти?",
+            QMessageBox::Yes | QMessageBox::No);
+
+        if (confirm == QMessageBox::No) {
+            event->ignore();
+            return;
+        }
+    }
+    event->accept();
+}
+
+void MainWindow::handleAddPatient() {
     PatientDialog dialog(this);
 
     if (dialog.exec() == QDialog::Accepted) {
@@ -45,7 +58,6 @@ void MainWindow::on_addPatientButton_clicked() {
         int row = ui->generalTable->rowCount();
         ui->generalTable->insertRow(row);
 
-        // Заполняем строку таблицы
         ui->generalTable->setItem(row, 0, new QTableWidgetItem(newPatient.getSurname()));
         ui->generalTable->setItem(row, 1, new QTableWidgetItem(newPatient.getName()));
         ui->generalTable->setItem(row, 2, new QTableWidgetItem(newPatient.getPatronymic()));
@@ -53,17 +65,19 @@ void MainWindow::on_addPatientButton_clicked() {
         ui->generalTable->setItem(row, 4, new QTableWidgetItem(QString::number(newPatient.getHeight())));
         ui->generalTable->setItem(row, 5, new QTableWidgetItem(QString::number(newPatient.getWeight())));
         ui->generalTable->setItem(row, 6, new QTableWidgetItem(newPatient.getNotes()));
+
+        isDataModified = true;
     }
+    handleSearch(ui->searchLineEdit->text());
 }
 
-void MainWindow::on_editPatientButton_clicked() {
+void MainWindow::handleEditPatient() {
     int row = ui->generalTable->currentRow();
     if (row < 0) {
         QMessageBox::warning(this, "Ошибка", "Выберите пациента для редактирования");
         return;
     }
 
-    // Извлекаем данные из строки таблицы
     Patient patient(
         ui->generalTable->item(row, 0)->text(),
         ui->generalTable->item(row, 1)->text(),
@@ -86,49 +100,49 @@ void MainWindow::on_editPatientButton_clicked() {
         ui->generalTable->item(row, 4)->setText(QString::number(updatedPatient.getHeight()));
         ui->generalTable->item(row, 5)->setText(QString::number(updatedPatient.getWeight()));
         ui->generalTable->item(row, 6)->setText(updatedPatient.getNotes());
+
+        isDataModified = true;
     }
+
+    handleSearch(ui->searchLineEdit->text());
 }
 
-void MainWindow::on_deletePatientButton_clicked() {
+void MainWindow::handleDeletePatient() {
     int row = ui->generalTable->currentRow();
     if (row < 0) {
         QMessageBox::warning(this, "Ошибка", "Выберите пациента для удаления");
         return;
     }
 
-    ui->generalTable->removeRow(row);
+    QMessageBox::StandardButton confirm = QMessageBox::question(
+        this, "Удаление пациента",
+        "Вы уверены, что хотите удалить этого пациента?",
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (confirm == QMessageBox::Yes) {
+        ui->generalTable->removeRow(row);
+        isDataModified = true;
+    }
 }
 
-
 void MainWindow::openFile() {
+    if (isDataModified) {
+        QMessageBox::StandardButton confirm = QMessageBox::question(
+            this, "Открытие файла",
+            "Есть несохранённые изменения. Вы уверены, что хотите открыть новый файл?",
+            QMessageBox::Yes | QMessageBox::No);
+
+        if (confirm == QMessageBox::No) {
+            return;
+        }
+    }
+
     QString fileName = QFileDialog::getOpenFileName(this, "Открыть файл", "", "CSV files (*.csv)");
     if (fileName.isEmpty()) return;
 
-    currentFile = fileName; // Сохраняем путь к текущему файлу
+    currentFile = fileName;
     loadFile(fileName);
-}
-
-void MainWindow::loadFile(const QString &fileName) {
-    QFile file(fileName);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, "Ошибка", "Не удалось открыть файл для чтения.");
-        return;
-    }
-
-    ui->generalTable->setRowCount(0);
-    QTextStream in(&file);
-    while (!in.atEnd()) {
-        QStringList fields = in.readLine().split(",");
-        if (fields.size() == ui->generalTable->columnCount()) {
-            int row = ui->generalTable->rowCount();
-            ui->generalTable->insertRow(row);
-            for (int col = 0; col < fields.size(); ++col) {
-                ui->generalTable->setItem(row, col, new QTableWidgetItem(fields[col]));
-            }
-        }
-    }
-    file.close();
-    QMessageBox::information(this, "Успех", "Файл успешно загружен.");
+    isDataModified = false;
 }
 
 void MainWindow::openLastFile() {
@@ -144,7 +158,18 @@ void MainWindow::saveFile() {
         saveFileAs();
     } else {
         writeToFile(currentFile);
+        isDataModified = false;
     }
+
+}
+
+void MainWindow::saveFileAs() {
+    QString fileName = QFileDialog::getSaveFileName(this, "Сохранить файл как", "", "CSV files (*.csv)");
+    if (fileName.isEmpty()) return;
+
+    currentFile = fileName;
+    writeToFile(fileName);
+    isDataModified = false;
 }
 
 void MainWindow::writeToFile(const QString &fileName) {
@@ -164,17 +189,45 @@ void MainWindow::writeToFile(const QString &fileName) {
         out << rowData.join(",") << "\n";
     }
     file.close();
-    QMessageBox::information(this, "Успех", "Файл успешно сохранён.");
 }
 
-void MainWindow::saveFileAs() {
-    QString fileName = QFileDialog::getSaveFileName(this, "Сохранить файл как", "", "CSV files (*.csv)");
-    if (fileName.isEmpty()) return;
+void MainWindow::loadFile(const QString &fileName) {
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, "Ошибка", "Не удалось открыть файл для чтения.");
+        return;
+    }
 
-    currentFile = fileName; // Сохраняем путь к новому файлу
-    writeToFile(fileName);
+    ui->generalTable->setRowCount(0);
+    QTextStream in(&file);
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        QStringList fields = line.split(",");
+        if (fields.size() != ui->generalTable->columnCount()) {
+            QMessageBox::warning(this, "Ошибка", "Некорректный формат файла CSV.");
+            return;
+        }
+
+        int row = ui->generalTable->rowCount();
+        ui->generalTable->insertRow(row);
+        for (int col = 0; col < fields.size(); ++col) {
+            ui->generalTable->setItem(row, col, new QTableWidgetItem(fields[col]));
+        }
+    }
+    file.close();
+    QMessageBox::information(this, "Успех", "Файл успешно загружен.");
 }
 
-void MainWindow::exitApplication() {
-    QApplication::quit();
+void MainWindow::handleSearch(const QString &query) {
+    for (int row = 0; row < ui->generalTable->rowCount(); ++row) {
+        bool match = false;
+        for (int col = 0; col < ui->generalTable->columnCount(); ++col) {
+            QTableWidgetItem *item = ui->generalTable->item(row, col);
+            if (item && item->text().contains(query, Qt::CaseInsensitive)) {
+                match = true;
+                break;
+            }
+        }
+        ui->generalTable->setRowHidden(row, !match); // Скрываем строки, не соответствующие запросу
+    }
 }
