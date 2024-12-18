@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>550</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QTableWidget" name="generalTable">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>80</y>
+      <width>671</width>
+      <height>361</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="addPatientButton">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>450</y>
+      <width>191</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Добавить пациента</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="deletePatientButton">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>450</y>
+      <width>191</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Удалить пациента</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="editPatientButton">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>450</y>
+      <width>191</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Редактировать пациента</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>Файл</string>
+    </property>
+    <addaction name="openLastActionButton"/>
+    <addaction name="openFileActionButton"/>
+    <addaction name="separator"/>
+    <addaction name="saveActionButton"/>
+    <addaction name="saveAsActionButton"/>
+    <addaction name="separator"/>
+    <addaction name="exitActionButton"/>
+   </widget>
+   <addaction name="menu"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="openFileActionButton">
+   <property name="text">
+    <string>Открыть из файла...</string>
+   </property>
+  </action>
+  <action name="saveAsActionButton">
+   <property name="text">
+    <string>Сохранить как...</string>
+   </property>
+  </action>
+  <action name="exitActionButton">
+   <property name="text">
+    <string>Выйти</string>
+   </property>
+  </action>
+  <action name="saveActionButton">
+   <property name="text">
+    <string>Сохранить</string>
+   </property>
+  </action>
+  <action name="openLastActionButton">
+   <property name="text">
+    <string>Открыть последний</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
