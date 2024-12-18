@@ -50,7 +50,7 @@
 
 ```bash
 git clone https://github.com/Alexashin/cards-manager.git
-cd patient-catalog
+cd cards-manager
 ```
 
 2. **Соберите проект с использованием CMake:**
@@ -83,8 +83,8 @@ cmake --build .
 
 ## Пример интерфейса
 
-![[photos/1.png]]
-![[photos/2.png]]
+![main window](https://github.com/Alexashin/cards-manager/blob/main/photos/1.png?raw=true)
+![modal window](https://github.com/Alexashin/cards-manager/blob/main/photos/1.png?raw=true)
 
 ## Структура проекта
 
