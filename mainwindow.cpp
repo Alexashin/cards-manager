@@ -19,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
         "Фамилия", "Имя", "Отчество", "Год рождения", "Рост", "Вес", "Заметки"
     });
     ui->generalTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->generalTable->setSortingEnabled(true);
 
     connect(ui->addPatientButton, &QPushButton::clicked, this, &MainWindow::handleAddPatient);
     connect(ui->editPatientButton, &QPushButton::clicked, this, &MainWindow::handleEditPatient);
