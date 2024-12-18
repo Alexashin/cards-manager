@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Карточки пациентов</string>
   </property>
+  <property name="windowIcon">
+   <iconset theme="QIcon::ThemeIcon::AddressBookNew"/>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QTableWidget" name="generalTable">
     <property name="geometry">

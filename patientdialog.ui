@@ -19,6 +19,9 @@
   <property name="windowTitle">
    <string>Добавить/Редактировать пациента</string>
   </property>
+  <property name="windowIcon">
+   <iconset theme="QIcon::ThemeIcon::DocumentNew"/>
+  </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
